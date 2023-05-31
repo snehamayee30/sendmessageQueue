@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Order Management System</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        body {
+            padding: 20px;
+        }
+        
+        h2 {
+            margin-bottom: 20px;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        #message {
+            margin-top: 20px;
+        }
+    </style>
+    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</head>
+
+<body>
+
+    <div class="container">
+        <h2>Order Management System</h2>
+
+        <div class="form-group">
+            <label for="prid">Product ID:</label>
+            <input type="text" class="form-control" id="prid" placeholder="Please enter product ID">
+        </div>
+        <div class="form-group">
+            <label for="msg">Product Name:</label>
+            <input type="text" class="form-control" id="msg" placeholder="Please enter product name">
+        </div>
+        <div class="form-group">
+            <label for="quantity">Quantity:</label>
+            <input type="number" class="form-control" id="quantity" placeholder="Please enter quantity">
+        </div>
+        
+
+        <button type="button" class="btn btn-primary" id="send">Place Order</button>
+        <button type="button" class="btn btn-primary" id="retrieve">Retrieve Order Info</button>
+        <p id="message"></p>
+
+        <div class="col-lg-6 mt-4">
+            <table class="table table-bordered table-striped">
+                <thead id="header">
+                </thead>
+                <tbody id="output">
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Modal -->
+    <div class="modal fade" id="orderSuccessModal" tabindex="-1" role="dialog" aria-labelledby="orderSuccessModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="orderSuccessModalLabel">Order Confirmation</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <p>Order successfully placed!</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="text/javascript">
+        $("#send").click(function () {
+            var productID = $("#prid").val();
+            var productName = $("#msg").val();
+            var quantity = $("#quantity").val();
+
+            var data = {
+                "productID": productID,
+                "productName": productName,
+                "quantity": quantity
+            };
+
+            $.ajax({
+                type: "POST",
+                url: "/sendMessageToSB",
+                data: JSON.stringify(data),
+                contentType: "application/json",
+                success: function (response) {
+                    console.log(response.message);
+                    // Display the success modal
+                    $("#orderSuccessModal").modal("show");
+                },
+                failure: function (response) {
+                    console.log(response.message);
+                },
+                error: function (response) {
+                    console.log(response.message);
+                }
+            });
+        });
+
+        $("#retrieve").click(function () {
+            $.ajax({
+                type: "GET",
+                url: "/allDataFromDb",
+                dataType: "json",
+                success: function (responseArray) {
+                    $("#header").html("<tr><th>ProductID</th><th>ProductName</th><th>Quantity</th></tr>");
+                    const responseHTML = responseArray.map((element) => {
+                        return "<tr>\
+                                <td>" + element.productID + "</td>\
+                                <td>" + element.productName + "</td>\
+                                <td>" + element.quantity + "</td>\
+                                </tr>"
+                    })
+                    $("#output").html(responseHTML);
+                },
+                failure: function (response) {
+                    $("#message").html(response);
+                },
+                error: function (response) {
+                    $("#message").html(response);
+                }
+            });
+        });
+    </script>
+</body>
+</html>
